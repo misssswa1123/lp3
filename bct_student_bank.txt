@@ -1,0 +1,91 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract BankAccount {
+
+    // Store the balance of each customer
+    mapping(address => uint256) private balances;
+
+    // Deposit money
+    function deposit() public payable {
+        require(msg.value > 0, "Amount must be greater than zero");
+
+        balances[msg.sender] += msg.value;
+    }
+
+    // Withdraw money
+    function withdraw(uint256 amount) public {
+        require(amount > 0, "Amount must be greater than zero");
+        require(balances[msg.sender] >= amount, "Insufficient balance");
+
+        balances[msg.sender] -= amount;
+
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        require(success, "Transfer failed");
+    }
+
+    // Show account balance
+    function showBalance() public view returns (uint256) {
+        return balances[msg.sender];
+    }
+}
+
+
+#student
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract StudentData {
+
+    // Structure to store student details
+    struct Student {
+        uint256 rollNo;
+        string name;
+        uint256 age;
+        string course;
+    }
+
+    // Array to store multiple students
+    Student[] public students;
+
+    // Event for fallback function
+    event FallbackCalled(address sender, uint256 amount);
+
+    // Function to add student details
+    function addStudent(
+        uint256 _rollNo,
+        string memory _name,
+        uint256 _age,
+        string memory _course
+    ) public {
+        students.push(Student(_rollNo, _name, _age, _course));
+    }
+
+    // Function to display student details
+    function getStudent(uint256 index)
+        public
+        view
+        returns (uint256, string memory, uint256, string memory)
+    {
+        require(index < students.length, "Invalid student index");
+
+        Student memory s = students[index];
+
+        return (s.rollNo, s.name, s.age, s.course);
+    }
+
+    // Function to count students
+    function getStudentCount() public view returns (uint256) {
+        return students.length;
+    }
+
+    // Fallback function
+    fallback() external payable {
+        emit FallbackCalled(msg.sender, msg.value);
+    }
+
+    // Function to check contract ETH balance
+    function getContractBalance() public view returns (uint256) {
+        return address(this).balance;
+    }
+}
